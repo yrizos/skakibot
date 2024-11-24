@@ -2,11 +2,7 @@ import os
 import chess
 import openai
 from skakibot.config import get_openai_key, get_openai_model
-
-
-def clear_display():
-    """Clears the terminal screen."""
-    os.system('cls' if os.name == 'nt' else 'clear')
+from skakibot.cli import CLI
 
 
 def get_openai_move(board):
@@ -41,23 +37,17 @@ def main():
     Handles user input, validates moves, and updates the board.
     """
     model = get_openai_model()
-    welcome_message = f"Welcome to Skakibot! Using OpenAI model: {model}\nType 'exit' to quit the game.\n"
+    cli = CLI(
+        welcome_message=f"Welcome to Skakibot! Using OpenAI model: {model}")
     board = chess.Board()
     current_message = ""
 
     while not board.is_game_over():
-        clear_display()
-        print(welcome_message)
-        print(board)
-        if current_message:
-            print(f"\n{current_message}")
-        else:
-            print("\n")
+        cli.display_board(board, current_message)
 
-        user_input = input("Enter your next move (e.g., e2e4): ").strip()
-
+        user_input = cli.get_user_input()
         if user_input.lower() == 'exit':
-            print("Thanks for playing SkakiBot. Goodbye!")
+            cli.show_game_over_message("Thanks for playing SkakiBot.")
             break
 
         try:
@@ -72,26 +62,29 @@ def main():
             current_message = "Invalid move format. Use UCI format like 'e2e4'."
             continue
 
-        try:
-            ai_move_uci = get_openai_move(board)
-            ai_move = chess.Move.from_uci(ai_move_uci)
+        if not board.is_game_over():
+            try:
+                ai_move_uci = get_openai_move(board)
+                ai_move = chess.Move.from_uci(ai_move_uci)
+            except Exception as e:
+                cli.show_error(f"Error with OpenAI: {str(e)}")
+                break
+
             if ai_move in board.legal_moves:
                 board.push(ai_move)
                 current_message = f"OpenAI played '{ai_move_uci}'."
             else:
-                current_message = "OpenAI suggested an invalid move. Skipping its turn."
-        except Exception as e:
-            print(f"Error with OpenAI: {str(e)}")
-            print("The game is ending due to an error with OpenAI. Goodbye!")
-            break
+                cli.show_error(
+                    f"OpenAI suggested an invalid move: '{ai_move_uci}'.")
+                break
 
     if board.is_checkmate():
-        print("Checkmate! The game is over.")
+        cli.show_game_over_message("Checkmate! The game is over.")
     elif board.is_stalemate():
-        print("Stalemate! The game is a draw.")
+        cli.show_game_over_message("Stalemate! The game is a draw.")
     elif board.is_insufficient_material():
-        print("Draw due to insufficient material.")
+        cli.show_game_over_message("Draw due to insufficient material.")
     elif board.is_seventyfive_moves():
-        print("Draw due to the seventy-five-move rule.")
+        cli.show_game_over_message("Draw due to the seventy-five-move rule.")
     else:
-        print("Game ended.")
+        cli.show_game_over_message("Game ended.")
