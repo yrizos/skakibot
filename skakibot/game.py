@@ -11,6 +11,7 @@ def get_openai_move(board):
     """
     openai.api_key = get_openai_key()
     board_fen = board.fen()
+    legal_moves = ", ".join(move.uci() for move in board.legal_moves)
 
     response = openai.chat.completions.create(
         model=get_openai_model(),
@@ -22,8 +23,10 @@ def get_openai_move(board):
             {"role": "user", "content": (
                 "The current chess board is given in FEN notation:\n"
                 f"{board_fen}\n\n"
-                "Analyse the position and suggest the best possible move. Respond "
-                "with a single UCI move, such as 'e2e4'. Do not provide any explanations."
+                "The following are the legal moves for this position:\n"
+                f"{legal_moves}\n\n"
+                "Analyse the position and suggest the best possible move from the list of legal moves. "
+                "Respond with a single UCI move, such as 'e2e4'. Do not provide any explanations."
             )}
         ])
 
@@ -47,7 +50,6 @@ def main():
 
         user_input = cli.get_user_input()
         if user_input.lower() == 'exit':
-            cli.show_game_over_message("Thanks for playing SkakiBot.")
             break
 
         try:
