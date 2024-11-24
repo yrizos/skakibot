@@ -1,8 +1,23 @@
 import chess
-import openai
 from skakibot.config import get_openai_key, get_openai_model
 from skakibot.cli import CLI
 from skakibot.openai_service import get_openai_move
+
+
+def handle_endgame(board, cli):
+    """
+    Handles the endgame logic by determining the game state and displaying an appropriate message.
+    """
+    if board.is_checkmate():
+        cli.show_game_over_message("Checkmate! The game is over.")
+    elif board.is_stalemate():
+        cli.show_game_over_message("Stalemate! The game is a draw.")
+    elif board.is_insufficient_material():
+        cli.show_game_over_message("Draw due to insufficient material.")
+    elif board.is_seventyfive_moves():
+        cli.show_game_over_message("Draw due to the seventy-five-move rule.")
+    else:
+        cli.show_game_over_message("Game ended.")
 
 
 def main():
@@ -52,13 +67,4 @@ def main():
                     f"OpenAI suggested an invalid move: '{ai_move_uci}'.")
                 break
 
-    if board.is_checkmate():
-        cli.show_game_over_message("Checkmate! The game is over.")
-    elif board.is_stalemate():
-        cli.show_game_over_message("Stalemate! The game is a draw.")
-    elif board.is_insufficient_material():
-        cli.show_game_over_message("Draw due to insufficient material.")
-    elif board.is_seventyfive_moves():
-        cli.show_game_over_message("Draw due to the seventy-five-move rule.")
-    else:
-        cli.show_game_over_message("Game ended.")
+    handle_endgame(board, cli)
