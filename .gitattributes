@@ -1,0 +1,26 @@
+# Set default behavior to automatically normalize line endings
+* text=auto
+
+# Explicitly declare text files to be normalized and converted to native line endings
+*.py text
+*.txt text
+*.md text
+*.json text
+*.yml text
+*.yaml text
+
+# Declare binary files to be treated as binary and not modified
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.pdf binary
+*.zip binary
+*.exe binary
+
+# Handle specific file types
+*.sh eol=lf
+*.bat eol=crlf
+
+# Ensure .gitattributes itself is treated as text
+.gitattributes text
