@@ -20,6 +20,27 @@ def handle_endgame(board, cli):
         cli.show_game_over_message("Game ended.")
 
 
+def handle_user_move(board, cli):
+    """
+    Handles user input, validates the move, and updates the board.
+    Returns a tuple (success, message), where success is a boolean indicating
+    whether the move was valid, and message is the status message to display.
+    """
+    user_input = cli.get_user_input()
+    if user_input.lower() == 'exit':
+        return False, "exit"
+
+    try:
+        move = chess.Move.from_uci(user_input)
+        if move in board.legal_moves:
+            board.push(move)
+            return True, f"Move '{user_input}' played."
+        else:
+            return False, "Invalid move. Please enter a valid move."
+    except ValueError:
+        return False, "Invalid move format. Use UCI format like 'e2e4'."
+
+
 def main():
     """
     Main function for the CLI chess game.
@@ -35,20 +56,12 @@ def main():
     while not board.is_game_over():
         cli.display_board(board, current_message)
 
-        user_input = cli.get_user_input()
-        if user_input.lower() == 'exit':
+        success, message = handle_user_move(board, cli)
+        if message == "exit":
             break
 
-        try:
-            move = chess.Move.from_uci(user_input)
-            if move in board.legal_moves:
-                board.push(move)
-                current_message = f"Move '{user_input}' played."
-            else:
-                current_message = "Invalid move. Please enter a valid move."
-                continue
-        except ValueError:
-            current_message = "Invalid move format. Use UCI format like 'e2e4'."
+        current_message = message
+        if not success:
             continue
 
         if not board.is_game_over():
