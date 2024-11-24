@@ -1,4 +1,10 @@
+import os
 import chess
+
+
+def clear_display():
+    """Clears the terminal screen."""
+    os.system('cls' if os.name == 'nt' else 'clear')
 
 
 def main():
@@ -6,11 +12,18 @@ def main():
     Main function for the CLI chess game.
     Handles user input, validates moves, and updates the board.
     """
-    print("Welcome to SkakiBot! Type 'exit' to quit the game.")
+    welcome_message = "Welcome to SkakiBot! Type 'exit' to quit the game."
     board = chess.Board()
+    current_message = ""
 
     while not board.is_game_over():
+        clear_display()
+        print(welcome_message)
         print(board)
+        if current_message:
+            print(f"\n{current_message}")
+        else:
+            print("\n")
 
         user_input = input("Enter your next move (e.g., e2e4): ").strip()
 
@@ -22,11 +35,11 @@ def main():
             move = chess.Move.from_uci(user_input)
             if move in board.legal_moves:
                 board.push(move)
-                print(f"Move '{user_input}' played.")
+                current_message = f"Move '{user_input}' played."
             else:
-                print("Invalid move. Please enter a valid move.")
+                current_message = "Invalid move. Please enter a valid move."
         except ValueError:
-            print("Invalid move format. Use UCI format like 'e2e4'.")
+            current_message = "Invalid move format. Use UCI format like 'e2e4'."
 
     if board.is_checkmate():
         print("Checkmate! The game is over.")
