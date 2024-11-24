@@ -1,8 +1,8 @@
 # SkakiBot ♟️🤖
 
-A command-line chess game where you play against an AI. Built with `python-chess` and OpenAI.
+A command-line chess game where you play against an AI, built with `python-chess` and OpenAI. I've documented my process in: ["Building a Chess Game with Python and OpenAI"](https://dev.to/yrizos/building-a-chess-game-with-python-and-openai-3knn).
 
-(In case you're wondering, "Skaki" is the Greek word for chess.)
+(And yes, "Skaki" is the Greek word for chess)
 
 ## Setup
 
@@ -10,6 +10,12 @@ You need an OpenAI API key. Get it from [OpenAI API Keys](https://platform.opena
 
 ```bash
 export OPENAI_API_KEY="your-openai-api-key"
+```
+
+The default model is `gpt-3.5-turbo`. You can override this by setting `OPENAI_MODEL`:
+
+```bash
+export OPENAI_MODEL="gpt-4.0-mini"
 ```
 
 ## Running with Docker

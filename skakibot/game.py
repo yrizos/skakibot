@@ -1,7 +1,7 @@
 import os
 import chess
 import openai
-from skakibot.config import get_openai_key
+from skakibot.config import get_openai_key, get_openai_model
 
 
 def clear_display():
@@ -17,7 +17,7 @@ def get_openai_move(board):
     board_fen = board.fen()
 
     response = openai.chat.completions.create(
-        model="gpt-3.5-turbo",
+        model=get_openai_model(),
         messages=[
             {"role": "system", "content": (
                 "You are an expert chess player and assistant. Your task is to "
@@ -40,7 +40,8 @@ def main():
     Main function for the CLI chess game.
     Handles user input, validates moves, and updates the board.
     """
-    welcome_message = "Welcome to SkakiBot! Type 'exit' to quit the game."
+    model = get_openai_model()
+    welcome_message = f"Welcome to Skakibot! Using OpenAI model: {model}\nType 'exit' to quit the game.\n"
     board = chess.Board()
     current_message = ""
 
