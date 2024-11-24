@@ -41,6 +41,24 @@ def handle_user_move(board, cli):
         return False, "Invalid move format. Use UCI format like 'e2e4'."
 
 
+def handle_ai_move(board, cli, openai_key, openai_model):
+    """
+    Handles the AI move using the OpenAI service.
+    Returns a tuple (success, message), where success is a boolean indicating
+    whether the AI move was valid, and message is the status message to display.
+    """
+    try:
+        ai_move_uci = get_openai_move(board, openai_key, openai_model)
+        ai_move = chess.Move.from_uci(ai_move_uci)
+        if ai_move in board.legal_moves:
+            board.push(ai_move)
+            return True, f"OpenAI played '{ai_move_uci}'."
+        else:
+            return False, f"OpenAI suggested an invalid move: '{ai_move_uci}'."
+    except Exception as e:
+        return False, f"Error with OpenAI: {str(e)}"
+
+
 def main():
     """
     Main function for the CLI chess game.
@@ -65,19 +83,12 @@ def main():
             continue
 
         if not board.is_game_over():
-            try:
-                ai_move_uci = get_openai_move(board, openai_key, openai_model)
-                ai_move = chess.Move.from_uci(ai_move_uci)
-            except Exception as e:
-                cli.show_error(f"Error with OpenAI: {str(e)}")
+            success, message = handle_ai_move(
+                board, cli, openai_key, openai_model)
+            if not success:
+                cli.show_error(message)
                 break
 
-            if ai_move in board.legal_moves:
-                board.push(ai_move)
-                current_message = f"OpenAI played '{ai_move_uci}'."
-            else:
-                cli.show_error(
-                    f"OpenAI suggested an invalid move: '{ai_move_uci}'.")
-                break
+            current_message = message
 
     handle_endgame(board, cli)
