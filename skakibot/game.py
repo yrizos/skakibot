@@ -1,37 +1,8 @@
-import os
 import chess
 import openai
 from skakibot.config import get_openai_key, get_openai_model
 from skakibot.cli import CLI
-
-
-def get_openai_move(board):
-    """
-    Uses OpenAI to generate a move for the current board state.
-    """
-    openai.api_key = get_openai_key()
-    board_fen = board.fen()
-    legal_moves = ", ".join(move.uci() for move in board.legal_moves)
-
-    response = openai.chat.completions.create(
-        model=get_openai_model(),
-        messages=[
-            {"role": "system", "content": (
-                "You are an expert chess player and assistant. Your task is to "
-                "analyse chess positions and suggest the best move in UCI format."
-            )},
-            {"role": "user", "content": (
-                "The current chess board is given in FEN notation:\n"
-                f"{board_fen}\n\n"
-                "The following are the legal moves for this position:\n"
-                f"{legal_moves}\n\n"
-                "Analyse the position and suggest the best possible move from the list of legal moves. "
-                "Respond with a single UCI move, such as 'e2e4'. Do not provide any explanations."
-            )}
-        ])
-
-    suggested_move = response.choices[0].message.content.strip()
-    return suggested_move
+from skakibot.openai_service import get_openai_move
 
 
 def main():
@@ -39,9 +10,10 @@ def main():
     Main function for the CLI chess game.
     Handles user input, validates moves, and updates the board.
     """
-    model = get_openai_model()
+    openai_key = get_openai_key()
+    openai_model = get_openai_model()
     cli = CLI(
-        welcome_message=f"Welcome to Skakibot! Using OpenAI model: {model}")
+        welcome_message=f"Welcome to Skakibot! Using OpenAI model: {openai_model}")
     board = chess.Board()
     current_message = ""
 
@@ -66,7 +38,7 @@ def main():
 
         if not board.is_game_over():
             try:
-                ai_move_uci = get_openai_move(board)
+                ai_move_uci = get_openai_move(board, openai_key, openai_model)
                 ai_move = chess.Move.from_uci(ai_move_uci)
             except Exception as e:
                 cli.show_error(f"Error with OpenAI: {str(e)}")
